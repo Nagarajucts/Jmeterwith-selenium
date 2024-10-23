@@ -1,11 +1,35 @@
-name: Docker Image CI
+name: Build and Run Windows Docker Image
+
 on:
-  workflow_dispatch
+  push:
+    branches:
+      - main
+  pull_request:
+
 jobs:
   build:
-    runs-on: winrunner 
+    runs-on: windows-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
+    # Checkout code from the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Set up Docker on Windows runner
+    - name: Set up Docker
       run: |
-       docker build -t nagarajucts/jmeterwithselenium .
+        Install-WindowsFeature containers
+        Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
+        Install-Package -Name docker -ProviderName DockerMsftProvider -Force
+        Start-Service Docker
+
+    # Build the Docker image
+    - name: Build Docker Image
+      run: |
+        docker build -t windows-jmeter-image -f Dockerfile .
+
+    # Run the Docker image (You can modify it to run any command within the container)
+    - name: Run Docker Container
+      run: |
+        docker run windows-jmeter-image jmeter.bat -n -t /path/to/your/testplan.jmx -l /path/to/results.jtl
+
