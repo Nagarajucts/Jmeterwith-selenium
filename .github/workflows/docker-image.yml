@@ -7,8 +7,8 @@ jobs:
     steps:
       - name: Set PowerShell Execution Policy
         run: Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
-        shell: pwsh
+        shell: powershell
       
       - name: Run Docker Build
         run: docker build . --file Dockerfile --tag nagarajucts/jmeterwithselenium
-        shell: pwsh
+        shell: powershell
