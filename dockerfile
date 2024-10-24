@@ -1,46 +1,26 @@
-# Use a base Windows Server Core image
+# Use the official Windows Server Core image
 FROM mcr.microsoft.com/windows/servercore:ltsc2019
- 
-# Define environment variables
-ENV JMETER_VERSION 5.6.3
-ENV CHROME_DRIVER_VERSION 130.0.6723.69
-ENV SELENIUM_VERSION 4.24.0
- 
-# Metadata indicating an image maintainer
-LABEL maintainer="tr@nagarajumbrdi@gmail.com"
- 
-# Install Chocolatey
+
+# Set environment variables for JMeter and Chrome
+ENV JMETER_VERSION=5.6.3
+ENV CHROME_DRIVER_VERSION=130.0.6723.69
+ENV CHROME_INSTALLER=chrome_installer.exe
+ENV JMETER_HOME=C:\apache-jmeter-${JMETER_VERSION}
+
+# Add JMeter and Chrome to the PATH
+ENV PATH=%PATH%;%JMETER_HOME%\bin;C:\Program Files\Google\Chrome\Application
+
+# Install required tools for downloading and extracting files
 RUN powershell -Command \
-    Set-ExecutionPolicy Bypass -Scope Process -Force; \
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
-    iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
- 
-# Install Google Chrome
-RUN choco install googlechrome -y
- 
-# Download and install JMeter
-RUN powershell -Command \
-    Invoke-WebRequest -Uri https://downloads.apache.org//jmeter/binaries/apache-jmeter-$env:JMETER_VERSION.zip -OutFile jmeter.zip; \
-    Expand-Archive jmeter.zip -DestinationPath C:\; \
-    Remove-Item jmeter.zip
- 
-# Download and place ChromeDriver
-RUN powershell -Command \
-    Invoke-WebRequest -Uri https://storage.googleapis.com/chrome-for-testing-public/$env:CHROME_DRIVER_VERSION/win64/chromedriver-win64.zip -OutFile chromedriver.zip; \
-    Expand-Archive chromedriver.zip -DestinationPath C:\chromedriver; \
-    Remove-Item chromedriver.zip
- 
-# Download and place Selenium
-RUN powershell -Command \
-    Invoke-WebRequest -Uri https://github.com/SeleniumHQ/selenium/releases/download/selenium-$env:SELENIUM_VERSION/selenium-java-$env:SELENIUM_VERSION.zip -OutFile selenium.zip; \
-    Expand-Archive selenium.zip -DestinationPath C:\apache-jmeter-$env:JMETER_VERSION\lib; \
-    Remove-Item selenium.zip
- 
-# Set working directory
-WORKDIR C:/apache-jmeter-$env:JMETER_VERSION
- 
-# Expose necessary ports (Optional: Expose if you need to connect to JMeter remotely)
-EXPOSE 1099 50000
- 
-# Command to keep the container running
-CMD ["cmd"]
+    # Download the Chrome installer
+    Invoke-WebRequest -Uri 'https://dl.google.com/chrome/install/latest/chrome_installer.exe' -OutFile $env:CHROME_INSTALLER; \
+    # Install Chrome silently
+    Start-Process -FilePath $env:CHROME_INSTALLER -ArgumentList '/silent', '/install' -NoNewWindow -Wait; \
+    # Clean up the installer
+    Remove-Item $env:CHROME_INSTALLER; \
+    # Download JMeter
+    Invoke-WebRequest -Uri "https://downloads.apache.org//jmeter/binaries/apache-jmeter-${JMETER_VERSION}.zip" -OutFile "jmeter.zip"; \
+    # Expand JMeter archive
+    Expand-Archive -Path "jmeter.zip" -DestinationPath "C:\"; \
+    # Remove the JMeter zip file
+    Remove-Item "jmeter
