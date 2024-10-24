@@ -5,9 +5,9 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
-      - name: Run Docker Build with Bypass Policy
-        run: |
-          powershell -ExecutionPolicy Bypass -File "C:\Windows\SysWOW64\actions-runner\_work\_temp\your_script.ps1"
-          docker build . --file Dockerfile --tag nagarajucts/jmeterwithselenium
-        shell: powershell
-
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Run Docker Build with CMD
+        run: docker build . --file Dockerfile --tag nagarajucts/jmeterwithselenium
+        shell: cmd
