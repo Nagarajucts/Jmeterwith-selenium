@@ -7,10 +7,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        
+      - name: Start Docker Service
+        run: Start-Service docker
+        shell: powershell
 
-      - name: Set up Docker
+      - name: Check Docker Version
+        run: docker --version
+        shell: powershell
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
+        
       - name: Run Docker Build
         run: docker build . --file Dockerfile --tag nagarajucts/jmeterwithselenium
-        shell: cmd
+        shell: powershell
